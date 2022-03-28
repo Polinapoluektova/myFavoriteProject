@@ -1,6 +1,5 @@
 package com.mygdx.game.screen;
 
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -26,13 +25,13 @@ public class gameScreen implements Screen {
     Array<Texture> eatTexture = new Array<>();
     Music music;
     OrthographicCamera camera;
-    Rectangle player;
+    Rectangle cat;
     Array<Raindrop> eat = new Array<>();
+    Array<Rectangle> raineat;
     long dropTime;
     int toothpickCollected = 0;
     long startTime;
     long finishTime;
-
 
     public gameScreen(final MyGdxGame game) {
         this.game = game;
@@ -44,8 +43,22 @@ public class gameScreen implements Screen {
         music.setLooping(true);
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1100, 750);
+
+        // создается Rectangle для представления cat
+        cat = new Rectangle();
+        // центрируем cat по горизонтали
+        cat.x = 1100 / 2 - 64 / 2;
+        // размещаем на 20 пикселей выше нижней границы экрана.
+        cat.y = 20;
+
+        cat.width = 64;
+        cat.height = 64;
+
+
+        spawnToEat();
+
         spawnPlayer();
-        spawnVegdrops();
+        spawnToEat();
         startTime = System.currentTimeMillis();
     }
 
@@ -59,7 +72,7 @@ public class gameScreen implements Screen {
         game.batch.begin();
         game.batch.draw(background, 0, 0);
 
-        game.batch.draw(playerImage, player.x, player.y);
+        game.batch.draw(playerImage, cat.x, cat.y);
 
         for(Raindrop eat: eat) {
             game.batch.draw(eat.texture, eat.x, eat.y);
@@ -71,21 +84,21 @@ public class gameScreen implements Screen {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
-            player.x = touchPos.x - 230; // точка курсора
+            cat.x = touchPos.x - 230; // точка курсора
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            player.x -= 500 * Gdx.graphics.getDeltaTime();}
+            cat.x -= 500 * Gdx.graphics.getDeltaTime();}
         if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            player.x += 500 * Gdx.graphics.getDeltaTime();}
+            cat.x += 500 * Gdx.graphics.getDeltaTime();}
 
-        if(player.x < 0){
-            player.x = 0;}
-        if(player.x > 1920 - player.width){
-            player.x = 1920 - player.width;}
+        if(cat.x < 0){
+            cat.x = 0;}
+        if(cat.x > 1100 - cat.width){
+            cat.x = 1100 - cat.width;}
 
         if(TimeUtils.nanoTime() - dropTime > 1000000000){ // интенсивность
-            spawnVegdrops();}
+            spawnToEat();}
 
         Iterator<Raindrop> iterator = eat.iterator();
         while(iterator.hasNext()) {
@@ -94,7 +107,7 @@ public class gameScreen implements Screen {
             if(raindrop.y + 64 < 0){
                 iterator.remove();
             }
-            if(raindrop.overlaps(player)) {
+            if(raindrop.overlaps(cat)) {
                 if ("toothpick".equals(raindrop.type)) {
                     toothpickCollected++;
                 }
@@ -118,10 +131,10 @@ public class gameScreen implements Screen {
         background.dispose();
     }
 
-    private void spawnVegdrops() {
+    private void spawnToEat() {
         Raindrop raindrop = new Raindrop();
         raindrop.x = MathUtils.random(0, 1750); // диапазон падения
-        raindrop.y = 700; //высота падения
+        raindrop.y = 750; //высота падения
         raindrop.width = 150;
         raindrop.height = 150;
         raindrop.texture = eatTexture.get(0);
@@ -131,11 +144,11 @@ public class gameScreen implements Screen {
     }
 
     private void spawnPlayer() {
-        player = new Rectangle();
-        player.x = 850;
-        player.y = 0;
-        player.width = 250;
-        player.height = 150;
+        cat = new Rectangle();
+        cat.x = 850;
+        cat.y = 0;
+        cat.width = 250;
+        cat.height = 150;
     }
 
     @Override
